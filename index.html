@@ -287,7 +287,8 @@
             activeBranch = worldMX >= 0 ? 1 : -1;
         }
 
-        if (activeY !== null && mouseIsPressed) {
+        // 마우스를 떼도 고정되도록 수정된 부분
+        if (activeY !== null) {
             let px = activeBranch * a * sqrt(1 + (activeY*activeY)/(b*b));
             let py = activeY;
             let d1 = dist(px, py, -c, 0); 
@@ -304,8 +305,6 @@
             fill(255, 59, 48); textSize(18/zoom); textStyle(BOLD);
             text("거리의 차 |d₁ - d₂| = " + abs(d1-d2).toFixed(1) + " (일정)", 0, -100/zoom);
             textStyle(NORMAL);
-        } else {
-            activeY = null;
         }
     }
 
@@ -454,17 +453,14 @@
                 
                 let vTan = createVector(-vNorm.y, vNorm.x);
 
-                // 초록색 점선 (접선)
                 stroke(40, 167, 69, 150); strokeWeight(2/zoom); drawingContext.setLineDash([6, 6]);
                 line(px - vTan.x*80/zoom, py - vTan.y*80/zoom, px + vTan.x*80/zoom, py + vTan.y*80/zoom);
                 drawingContext.setLineDash([]);
                 
-                // --- '접선' 텍스트 추가 ---
                 push();
                 fill(40, 167, 69); noStroke(); textStyle(BOLD); textSize(14/zoom); textAlign(CENTER, CENTER);
                 text("접선", px + vTan.x * 95 / zoom, py + vTan.y * 95 / zoom);
                 pop();
-                // -----------------------
 
                 stroke(255, 136, 0, 180); strokeWeight(2/zoom);
                 line(px, py, px + vNorm.x*60/zoom, py + vNorm.y*60/zoom);
@@ -494,6 +490,7 @@
 
     function setMode(m) {
         mode = m;
+        activeY = null; // 모드 변경 시 점 고정 초기화
         document.getElementById('tab1').classList.toggle('active', m === 1);
         document.getElementById('tab2').classList.toggle('active', m === 2);
         document.getElementById('tab3').classList.toggle('active', m === 3);
@@ -518,7 +515,7 @@
     function updateInstruction() {
         let ins = document.getElementById('instructions');
         if (mode === 1) ins.innerHTML = "빈 공간을 <b>클릭하여 위아래로 드래그</b> 해보세요. 실시간으로 거리의 차이를 확인합니다.";
-        else if (mode === 2) ins.innerHTML = "초점이나 <b>점근선(회색 점선)에 마우스를 올려보세요.</b><br>쌍곡선 위를 <b>클릭하여 드래그</b>하면 거리의 차가 일정함을 볼 수 있습니다.";
+        else if (mode === 2) ins.innerHTML = "초점이나 <b>점근선(회색 점선)에 마우스를 올려보세요.</b><br>쌍곡선 위를 <b>클릭</b>하면 점과 거리가 고정됩니다. (다시 클릭하면 갱신)";
         else if (mode === 3) ins.innerHTML = "마우스를 <b>손전등처럼 조작하여 붉은색 타겟 초점을 향해 클릭</b>(빛 발사) 해보세요.";
     }
 
