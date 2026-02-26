@@ -61,7 +61,7 @@
     <button id="resetBtn" class="reset" onclick="resetData()">데이터 초기화</button>
     <button onclick="resetView()">화면 위치 초기화</button>
     
-    <button id="lightSwitchBtn" class="switch" onclick="toggleLightSource()">💡 광원 변경 (현재: F₁)</button>
+    <button id="lightSwitchBtn" class="switch" onclick="toggleLightSource()">🎯 타겟 초점 변경 (현재: F₁)</button>
     <label id="angleUi">
         <input type="checkbox" id="angleCheck"> 입사각 / 반사각 보기
     </label>
@@ -77,7 +77,6 @@
     let zoom = 1.0;
     let offsetX = 0, offsetY = 0;
     
-    // 쌍곡선은 c > a 조건이 필수
     let c = 150; 
     let a = 80;  
 
@@ -85,13 +84,13 @@
     let activeY = null;
     let activeBranch = 1;
     let rays = [];
-    let activeLightSource = 1; 
+    let activeLightTarget = 1; 
 
     let isInfoOpen = false;
     const conceptTexts = {
-        1: "<h3>자취 작도 원리</h3>쌍곡선은 <b>두 초점으로부터의 거리의 차가 일정한 점들의 집합</b>입니다.<br><br>• <b>파란색 점</b>: 고정된 두 초점<br>• <b>거리의 차(2a)</b>: 쌍곡선의 주축 길이(두 꼭짓점 사이의 거리)와 같습니다.<br><br>마우스를 위아래로 움직여보세요. 거리의 차가 일정한 궤적이 그려집니다.",
-        2: "<h3>쌍곡선의 정의와 점근선</h3>쌍곡선 위의 어느 위치에 있든 <b>두 초점까지의 거리의 차가 항상 일정(2a)</b>합니다.<br><br>마우스를 중심이나 꼭짓점 근처에 올려 명칭을 확인해 보세요. 회색 점선은 쌍곡선이 한없이 가까워지는 <b>점근선</b>입니다.",
-        3: "<h3>쌍곡선의 광학적 성질</h3>한 초점(광원)을 향해 쏜 빛이나 소리는 쌍곡선 벽면에 반사된 후, <b>마치 반대편 초점에서 출발한 것처럼</b> 퍼져 나갑니다.<br><br>이러한 성질은 카세그레인식 망원경 등 빛을 특정한 형태로 굴절, 반사시켜야 하는 광학 기기에 응용됩니다."
+        1: "<h3>자취 작도 원리</h3>쌍곡선은 <b>두 초점으로부터의 거리의 차가 일정한 점들의 집합</b>입니다.<br><br>마우스를 위아래로 움직여 궤적을 그려보세요. 그려지는 점과 두 초점 사이의 거리를 계산해 보면 그 <b>차이가 항상 일정(2a)</b>함을 실시간으로 확인할 수 있습니다.",
+        2: "<h3>쌍곡선의 정의와 점근선</h3>어느 위치에 있든 <b>두 초점까지의 거리의 차가 항상 일정(2a)</b>합니다.<br><br>중심을 지나는 <b>회색 점선은 쌍곡선의 점근선</b>입니다. 쌍곡선이 뻗어 나갈수록 이 선에 무한히 가까워지지만 결코 만나지 않습니다.",
+        3: "<h3>쌍곡선의 광학적 성질</h3>외부에서 <b>한 초점을 향해 똑바로 쏜 빛</b>은 쌍곡선 면에 부딪히면 <b>반대편 초점을 향해 반사</b>됩니다.<br><br>마우스(손전등)로 타겟 초점을 향해 빛을 쏴보세요. 거울에 반사된 빛이 정확히 반대편 초점으로 모이거나 퍼지는 것을 볼 수 있습니다."
     };
 
     function setup() {
@@ -106,7 +105,6 @@
         cSlider.input(() => {
             c = cSlider.value() / 2;
             cVal.html(cSlider.value());
-            // c가 a보다 작아지지 않도록 a값 강제 조정
             if (cSlider.value() <= aSlider.value()) {
                 aSlider.value(parseInt(cSlider.value()) - 20);
                 aVal.html(aSlider.value());
@@ -142,7 +140,6 @@
         pop();
     }
 
-    // 아래첨자 유틸리티
     function drawSubText(mainText, subText, x, y, size, col) {
         push();
         fill(col || 0); noStroke();
@@ -195,11 +192,23 @@
             
             tracePoints.push({x: penX, y: penY});
             
-            stroke(50); strokeWeight(3/zoom);
+            let d1 = dist(penX, penY, -c, 0);
+            let d2 = dist(penX, penY, c, 0);
+            
+            stroke(34, 197, 94); strokeWeight(3/zoom);
             line(-c, 0, penX, penY); line(c, 0, penX, penY);
             
             fill(100); noStroke(); ellipse(penX, penY, 10/zoom);
             fill(200, 100, 0); rect(penX - 2/zoom, penY - 15/zoom, 4/zoom, 20/zoom);
+
+            // 실시간 거리 표시
+            fill(0); textSize(15/zoom); textAlign(CENTER);
+            text("d₁: " + d1.toFixed(1), (-c + penX)/2, penY/2 - 10/zoom);
+            text("d₂: " + d2.toFixed(1), (c + penX)/2, penY/2 - 10/zoom);
+            
+            fill(255, 59, 48); textSize(18/zoom); textStyle(BOLD);
+            text("거리의 차 |d₁ - d₂| = " + abs(d1-d2).toFixed(1) + " (일정)", 0, -100/zoom);
+            textStyle(NORMAL);
         } else {
             stroke(150, 150, 150, 100); strokeWeight(3/zoom); noFill();
             let defX = a * sqrt(1 + (60/zoom)*(60/zoom)/(b*b));
@@ -229,9 +238,8 @@
         let checkPts = [
             {x: 0, y: 0, label: "중심"},
             {x: -c, y: 0, label: "F", sub: "₁", prefix: "초점 "},
-            {x: c, y: 0, label: "F", sub: "₂", prefix: "초점 "},
-            {x: a, y: 0, label: "꼭짓점"},
-            {x: -a, y: 0, label: "꼭짓점"}
+            {x: c, y: 0, label: "F", sub: "₂", prefix: "초점 "}
+            // 꼭짓점 제거
         ];
 
         let hoveredPt = null;
@@ -241,9 +249,7 @@
             }
         }
 
-        fill(100); noStroke();
-        ellipse(a, 0, 8/zoom); ellipse(-a, 0, 8/zoom); 
-        fill(0); ellipse(0, 0, 8/zoom);
+        fill(0); noStroke(); ellipse(0, 0, 8/zoom);
         fill(0, 122, 255); ellipse(-c, 0, 15/zoom); ellipse(c, 0, 15/zoom);
 
         if (hoveredPt) {
@@ -307,7 +313,6 @@
         let t1 = (-B + Math.sqrt(det)) / (2*A);
         let t2 = (-B - Math.sqrt(det)) / (2*A);
         
-        // 최소 양수 t (가장 먼저 부딪히는 지점)
         let t = -1;
         if (t1 > 1e-4 && t2 > 1e-4) t = min(t1, t2);
         else if (t1 > 1e-4) t = t1;
@@ -331,9 +336,9 @@
     }
 
     function toggleLightSource() {
-        activeLightSource = activeLightSource === 1 ? 2 : 1;
-        let subNum = activeLightSource === 1 ? "₁" : "₂";
-        document.getElementById('lightSwitchBtn').innerHTML = `💡 광원 변경 (현재: F${subNum})`;
+        activeLightTarget = activeLightTarget === 1 ? 2 : 1;
+        let subNum = activeLightTarget === 1 ? "₁" : "₂";
+        document.getElementById('lightSwitchBtn').innerHTML = `🎯 타겟 초점 변경 (현재: F${subNum})`;
         rays = []; 
     }
 
@@ -344,38 +349,42 @@
 
         drawHyperbolaLines(a, b, color(50, 50, 200), 4/zoom);
 
-        let sourcePos = activeLightSource === 1 ? -c : c;
-        let targetPos = activeLightSource === 1 ? c : -c;
+        // 사용자가 빛을 겨냥할 초점 (Target)
+        let targetPos = activeLightTarget === 1 ? -c : c;
+        let otherPos = activeLightTarget === 1 ? c : -c;
 
-        fill(255, 215, 0); noStroke(); ellipse(sourcePos, 0, 20/zoom); 
-        fill(0, 122, 255); ellipse(targetPos, 0, 15/zoom); 
+        fill(0, 122, 255); noStroke(); ellipse(otherPos, 0, 15/zoom); 
+        // 타겟 초점은 붉은색 과녁 느낌으로 표시
+        fill(255, 59, 48); ellipse(targetPos, 0, 15/zoom); 
         
-        drawSubText("F", activeLightSource === 1 ? "₁" : "₂", sourcePos, -20/zoom, 16/zoom);
-        drawSubText("F", activeLightSource === 1 ? "₂" : "₁", targetPos, -20/zoom, 16/zoom);
+        drawSubText("F", activeLightTarget === 1 ? "₁" : "₂", targetPos, -20/zoom, 16/zoom);
+        drawSubText("F", activeLightTarget === 1 ? "₂" : "₁", otherPos, -20/zoom, 16/zoom);
+
+        // 마우스(손전등) 위치 표시
+        if(!isOverUI()) {
+            fill(255, 215, 0); noStroke(); ellipse(worldMX, worldMY, 12/zoom);
+        }
 
         if (mouseIsPressed && mouseButton === LEFT && !isOverUI()) {
-            if (frameCount % 10 === 0) {
-                let p_start = createVector(sourcePos, 0);
-                let dir = createVector(worldMX - sourcePos, worldMY).normalize();
+            if (frameCount % 8 === 0) {
+                let p_start = createVector(worldMX, worldMY);
+                let targetVec = createVector(targetPos, 0);
+                let dir = p5.Vector.sub(targetVec, p_start).normalize();
                 
                 let p_hit = getHyperbolaIntersection(p_start.x, p_start.y, dir.x, dir.y, a, b);
                 
                 if (p_hit) {
                     let bouncePath = [p_start.copy(), p_hit.copy()];
                     
-                    // 쌍곡선의 법선 벡터 (그레이디언트)
                     let nx = 2 * p_hit.x / (a*a);
                     let ny = -2 * p_hit.y / (b*b);
                     let normal = createVector(nx, ny).normalize();
                     
-                    // 입사각과 법선의 방향 맞추기
                     let vInc = p5.Vector.sub(p_hit, p_start).normalize();
                     if (vInc.dot(normal) > 0) normal.mult(-1);
                     
-                    // 반사 벡터 계산
                     let vRef = p5.Vector.sub(vInc, p5.Vector.mult(normal, 2 * vInc.dot(normal)));
                     
-                    // 반사광은 마치 반대편 초점(targetPos)에서 나오는 것처럼 퍼짐
                     let farDist = 3000;
                     bouncePath.push(createVector(p_hit.x + vRef.x * farDist, p_hit.y + vRef.y * farDist));
 
@@ -402,8 +411,13 @@
             let r = rays[i];
             r.progress += speed;
 
+            // 빛이 조준하고 있던 타겟 초점까지의 연장선(가이드)을 연하게 표시
+            stroke(255, 59, 48, 50); strokeWeight(1/zoom); drawingContext.setLineDash([4, 4]);
+            line(r.path[1].x, r.path[1].y, targetPos, 0);
+            drawingContext.setLineDash([]);
+
             stroke(255, 204, 0, 30); strokeWeight(2/zoom);
-            line(r.path[0].x, r.path[0].y, r.path[1].x, r.path[1].y); // 빛이 뻗어나간 자취 살짝 표시
+            line(r.path[0].x, r.path[0].y, r.path[1].x, r.path[1].y); 
 
             let head = r.progress;
             let tail = max(0, r.progress - beamLen);
@@ -484,9 +498,9 @@
 
     function updateInstruction() {
         let ins = document.getElementById('instructions');
-        if (mode === 1) ins.innerHTML = "캔버스 좌우 공간을 <b>위아래로 드래그</b>하여 쌍곡선의 궤적을 그려보세요.";
-        else if (mode === 2) ins.innerHTML = "꼭짓점과 초점 등에 <b>마우스를 올려보세요.</b><br>쌍곡선 위를 <b>클릭하여 드래그</b>하면 거리의 차가 일정함을 볼 수 있습니다.";
-        else if (mode === 3) ins.innerHTML = "쌍곡선을 향해 마우스를 <b>클릭하여 꾹 누르고 계세요.</b><br>빛이 반사되어 <b>반대편 초점에서 뻗어 나가는 방향</b>으로 직진합니다.";
+        if (mode === 1) ins.innerHTML = "빈 공간을 <b>클릭하여 위아래로 드래그</b> 해보세요. 실시간으로 거리의 차이를 확인합니다.";
+        else if (mode === 2) ins.innerHTML = "초점에 <b>마우스를 올려보세요.</b><br>쌍곡선 위를 <b>클릭하여 드래그</b>하면 거리의 차가 일정함을 볼 수 있습니다.";
+        else if (mode === 3) ins.innerHTML = "마우스를 <b>손전등처럼 조작하여 붉은색 타겟 초점을 향해 클릭</b>(빛 발사) 해보세요.";
     }
 
     function resetData() { tracePoints = []; activeY = null; rays = []; }
