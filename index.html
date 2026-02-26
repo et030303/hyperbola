@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>쌍곡선의 특징 by ET</title>
+    <title>쌍곡선의 모든 것 by ET</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background-color: #f8f9fa; font-family: 'Pretendard', sans-serif; }
@@ -33,6 +33,12 @@
 
         #infoBox { display: none; position: absolute; top: 120px; right: 20px; width: 320px; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-left: 5px solid #17a2b8; font-size: 14px; line-height: 1.6; color: #333; z-index: 1001; }
         #infoBox h3 { margin-top: 0; margin-bottom: 12px; color: #17a2b8; font-size: 18px; }
+
+        /* 수식 표시를 위한 CSS */
+        #mathBox { display: none; position: absolute; bottom: 80px; left: 20px; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-left: 5px solid #007bff; font-size: 14px; line-height: 1.6; color: #333; z-index: 1001; pointer-events: none; }
+        .frac { display: inline-block; position: relative; vertical-align: middle; letter-spacing: 0.001em; text-align: center; margin: 0 4px; }
+        .frac > span { display: block; padding: 0.1em; }
+        .frac span.bottom { border-top: 2px solid #333; }
 
         #instructions { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; pointer-events: none; z-index: 1001; text-align: center; line-height: 1.5; white-space: nowrap; }
     </style>
@@ -68,6 +74,8 @@
 
     <button id="infoToggleBtn" class="info" onclick="toggleInfo()">📖 개념 설명 켜기</button>
 </div>
+
+<div id="mathBox"></div>
 
 <div id="infoBox"></div>
 <div id="instructions"></div>
@@ -110,6 +118,7 @@
                 aVal.html(aSlider.value());
                 a = aSlider.value() / 2;
             }
+            updateMathInfo(); // 수식 업데이트
             resetData();
         });
 
@@ -119,10 +128,39 @@
             }
             a = aSlider.value() / 2;
             aVal.html(aSlider.value());
+            updateMathInfo(); // 수식 업데이트
             resetData();
         });
 
+        updateMathInfo(); // 초기 셋팅 반영
         updateInstruction();
+    }
+
+    // 2번 모드에서 수식과 a,b,c 정보 표시 업데이트
+    function updateMathInfo() {
+        let bSq = c*c - a*a;
+        let bVal = sqrt(bSq).toFixed(1);
+        
+        let html = `
+            <div style="font-size:15px; margin-bottom:10px; color:#007bff; font-weight:bold;">[ 실시간 쌍곡선의 방정식 ]</div>
+            
+            <div style="display:flex; justify-content:center; align-items:center; font-size: 18px; margin-bottom:15px; font-family: serif;">
+                <div class="frac"><span>x<sup>2</sup></span><span class="bottom">${a*a}</span></div>
+                <span style="margin:0 8px;">-</span>
+                <div class="frac"><span>y<sup>2</sup></span><span class="bottom">${bSq}</span></div>
+                <span style="margin:0 8px;">= 1</span>
+            </div>
+            
+            <hr style="border:0; border-top:1px dashed #ccc; margin:10px 0;">
+            
+            <div style="font-size:14px; line-height: 1.8;">
+                <b>• 상수:</b> a = ${a},&nbsp;&nbsp; c = ${c}<br>
+                <span style="color:#666; font-size:13px;">( b<sup>2</sup> = c<sup>2</sup> - a<sup>2</sup> = ${c*c} - ${a*a} = ${bSq} &nbsp;➔&nbsp; <b>b ≈ ${bVal}</b> )</span><br>
+                <b>• 초점(F):</b> (${c}, 0), (-${c}, 0)<br>
+                <b>• 꼭짓점:</b> (${a}, 0), (-${a}, 0)
+            </div>
+        `;
+        document.getElementById('mathBox').innerHTML = html;
     }
 
     function draw() {
@@ -287,7 +325,6 @@
             activeBranch = worldMX >= 0 ? 1 : -1;
         }
 
-        // 마우스를 떼도 고정되도록 수정된 부분
         if (activeY !== null) {
             let px = activeBranch * a * sqrt(1 + (activeY*activeY)/(b*b));
             let py = activeY;
@@ -490,13 +527,15 @@
 
     function setMode(m) {
         mode = m;
-        activeY = null; // 모드 변경 시 점 고정 초기화
+        activeY = null;
         document.getElementById('tab1').classList.toggle('active', m === 1);
         document.getElementById('tab2').classList.toggle('active', m === 2);
         document.getElementById('tab3').classList.toggle('active', m === 3);
         
         document.getElementById('angleUi').style.display = (m === 3) ? 'flex' : 'none';
         document.getElementById('lightSwitchBtn').style.display = (m === 3) ? 'block' : 'none';
+        // 2번 모드에서만 수식 정보 박스 보이기
+        document.getElementById('mathBox').style.display = (m === 2) ? 'block' : 'none';
         
         updateInstruction();
         updateInfoText();
@@ -526,6 +565,7 @@
     function isOverUI() { 
         let inLeftMenu = mouseY < 280 && mouseX < 260;
         let inRightInfo = isInfoOpen && (mouseX > width - 360 && mouseY < 400); 
+        // mathBox 영역에서도 클릭을 무시하도록 원하면 조건을 추가할 수 있지만, pointer-events:none 이므로 그릴 수 있게 둡니다.
         return inLeftMenu || inRightInfo;
     } 
 
