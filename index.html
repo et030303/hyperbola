@@ -7,20 +7,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; background-color: #f8f9fa; font-family: 'Pretendard', sans-serif; }
+        
         #header { position: absolute; top: 0; width: 100%; background: #1a1a2e; color: white; text-align: center; padding: 12px 0; font-size: 24px; font-weight: 800; z-index: 1002; letter-spacing: 1px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        #header span { color: #ff4d4d; font-size: 16px; font-weight: normal; margin-left: 8px; }
+        #header span { color: #00d2ff; font-size: 16px; font-weight: normal; margin-left: 8px; }
+        
         #menu { position: absolute; top: 52px; width: 100%; display: flex; justify-content: center; background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
         .tab { padding: 15px 25px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; color: #555; transition: 0.3s; }
-        .tab.active { border-bottom: 3px solid #ff4d4d; color: #ff4d4d; }
+        .tab.active { border-bottom: 3px solid #007bff; color: #007bff; }
+        
         #ui-layer { position: absolute; top: 120px; left: 20px; z-index: 1001; display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.95); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .ui-item { display: flex; align-items: center; gap: 8px; }
         .ui-item label { font-size: 14px; font-weight: bold; color: #333; min-width: 90px; }
-        button { padding: 10px 15px; background: #ff4d4d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button.reset { background: #666; margin-top: 5px; }
-        button.switch { background: #ff4d4d; display: none; }
-        #angleUi { display: none; align-items: center; background: white; padding: 10px; border-radius: 8px; font-weight: bold; border: 2px solid #ff4d4d; }
-        #infoBox { display: none; position: absolute; top: 120px; right: 20px; width: 300px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 1001; }
-        #instructions { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; z-index: 1001; text-align: center; }
+
+        button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background 0.2s; }
+        button:hover { filter: brightness(1.1); }
+        button.reset { background: #ff3b30; margin-top: 5px; }
+        button.info { background: #17a2b8; margin-top: 5px; }
+        button.switch { background: #ff9500; display: none; margin-top: 5px; color: white;} 
+        
+        input[type=range] { -webkit-appearance: none; width: 140px; height: 8px; border-radius: 5px; background: #d3d3d3; outline: none; transition: .2s; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #007bff; cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        
+        #angleUi { display: none; align-items: center; background: rgba(255,255,255,0.95); padding: 10px 15px; border-radius: 8px; font-weight: bold; font-size: 14px; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; border: 2px solid #007bff; margin-top: 5px;}
+        #angleUi input { margin-right: 8px; cursor: pointer; width: 16px; height: 16px; }
+
+        #infoBox { display: none; position: absolute; top: 120px; right: 20px; width: 320px; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-left: 5px solid #17a2b8; font-size: 14px; line-height: 1.6; color: #333; z-index: 1001; }
+        #infoBox h3 { margin-top: 0; margin-bottom: 12px; color: #17a2b8; font-size: 18px; }
+
+        #instructions { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; pointer-events: none; z-index: 1001; text-align: center; line-height: 1.5; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -36,18 +50,23 @@
 <div id="ui-layer">
     <div class="ui-item">
         <label>초점 거리 (2c):</label>
-        <input type="range" id="cSlider" min="200" max="500" value="300" step="10">
+        <input type="range" id="cSlider" min="200" max="600" value="300" step="10">
         <span id="cValue">300</span>
     </div>
     <div class="ui-item">
         <label>거리의 차 (2a):</label>
-        <input type="range" id="aSlider" min="50" max="250" value="150" step="10">
-        <span id="aValue">150</span>
+        <input type="range" id="aSlider" min="50" max="400" value="160" step="10">
+        <span id="aValue">160</span>
     </div>
-    <button class="reset" onclick="resetData()">데이터 초기화</button>
-    <button id="lightSwitchBtn" class="switch" onclick="toggleLightSource()">💡 광원: F₁ (Red)</button>
-    <label id="angleUi"><input type="checkbox" id="angleCheck" checked> 입사각 / 반사각 보기</label>
-    <button onclick="toggleInfo()">📖 개념 설명</button>
+    <button id="resetBtn" class="reset" onclick="resetData()">데이터 초기화</button>
+    <button onclick="resetView()">화면 위치 초기화</button>
+    
+    <button id="lightSwitchBtn" class="switch" onclick="toggleLightSource()">💡 광원 변경 (현재: F₁)</button>
+    <label id="angleUi">
+        <input type="checkbox" id="angleCheck"> 입사각 / 반사각 보기
+    </label>
+
+    <button id="infoToggleBtn" class="info" onclick="toggleInfo()">📖 개념 설명 켜기</button>
 </div>
 
 <div id="infoBox"></div>
@@ -55,227 +74,434 @@
 
 <script>
     let mode = 1;
-    let zoom = 1.0, offsetX = 0, offsetY = 0;
-    let a = 75, c = 150;
+    let zoom = 1.0;
+    let offsetX = 0, offsetY = 0;
+    
+    // 쌍곡선은 c > a 조건이 필수
+    let c = 150; 
+    let a = 80;  
+
     let tracePoints = [];
+    let activeY = null;
+    let activeBranch = 1;
     let rays = [];
-    let activeLightSource = 1;
+    let activeLightSource = 1; 
+
     let isInfoOpen = false;
+    const conceptTexts = {
+        1: "<h3>자취 작도 원리</h3>쌍곡선은 <b>두 초점으로부터의 거리의 차가 일정한 점들의 집합</b>입니다.<br><br>• <b>파란색 점</b>: 고정된 두 초점<br>• <b>거리의 차(2a)</b>: 쌍곡선의 주축 길이(두 꼭짓점 사이의 거리)와 같습니다.<br><br>마우스를 위아래로 움직여보세요. 거리의 차가 일정한 궤적이 그려집니다.",
+        2: "<h3>쌍곡선의 정의와 점근선</h3>쌍곡선 위의 어느 위치에 있든 <b>두 초점까지의 거리의 차가 항상 일정(2a)</b>합니다.<br><br>마우스를 중심이나 꼭짓점 근처에 올려 명칭을 확인해 보세요. 회색 점선은 쌍곡선이 한없이 가까워지는 <b>점근선</b>입니다.",
+        3: "<h3>쌍곡선의 광학적 성질</h3>한 초점(광원)을 향해 쏜 빛이나 소리는 쌍곡선 벽면에 반사된 후, <b>마치 반대편 초점에서 출발한 것처럼</b> 퍼져 나갑니다.<br><br>이러한 성질은 카세그레인식 망원경 등 빛을 특정한 형태로 굴절, 반사시켜야 하는 광학 기기에 응용됩니다."
+    };
 
     function setup() {
         createCanvas(windowWidth, windowHeight);
-        let cs = select('#cSlider'), as = select('#aSlider');
-        cs.input(() => { 
-            c = cs.value()/2; select('#cValue').html(cs.value()); 
-            if(a >= c) { a = c-10; as.value(a*2); select('#aValue').html(a*2); }
-            resetData(); 
+        document.oncontextmenu = () => false;
+
+        let cSlider = select('#cSlider');
+        let aSlider = select('#aSlider');
+        let cVal = select('#cValue');
+        let aVal = select('#aValue');
+
+        cSlider.input(() => {
+            c = cSlider.value() / 2;
+            cVal.html(cSlider.value());
+            // c가 a보다 작아지지 않도록 a값 강제 조정
+            if (cSlider.value() <= aSlider.value()) {
+                aSlider.value(parseInt(cSlider.value()) - 20);
+                aVal.html(aSlider.value());
+                a = aSlider.value() / 2;
+            }
+            resetData();
         });
-        as.input(() => { 
-            a = as.value()/2; select('#aValue').html(as.value()); 
-            if(a >= c) { c = a+10; cs.value(c*2); select('#cValue').html(c*2); }
-            resetData(); 
+
+        aSlider.input(() => {
+            if (aSlider.value() >= cSlider.value()) {
+                aSlider.value(parseInt(cSlider.value()) - 20);
+            }
+            a = aSlider.value() / 2;
+            aVal.html(aSlider.value());
+            resetData();
         });
+
         updateInstruction();
     }
 
     function draw() {
         background(255);
+        
         push();
         translate(width/2 + offsetX, height/2 + offsetY);
         scale(zoom);
         drawGrid();
+
         if (mode === 1) runMode1();
         else if (mode === 2) runMode2();
         else if (mode === 3) runMode3();
+        
         pop();
     }
 
-    function drawSubText(m, s, x, y, size, col) {
-        push(); fill(col || 0); noStroke(); textSize(size);
-        let w = textWidth(m); textAlign(LEFT, BASELINE);
-        text(m, x - w/2, y); textSize(size * 0.7); text(s, x + w/2, y + size * 0.2);
+    // 아래첨자 유틸리티
+    function drawSubText(mainText, subText, x, y, size, col) {
+        push();
+        fill(col || 0); noStroke();
+        textSize(size);
+        let wMain = textWidth(mainText);
+        textSize(size * 0.7);
+        let wSub = textWidth(subText);
+        let totalW = wMain + wSub;
+        let startX = x - totalW / 2;
+        
+        textAlign(LEFT, BASELINE);
+        textSize(size);
+        text(mainText, startX, y);
+        textSize(size * 0.7);
+        text(subText, startX + wMain, y + size * 0.25);
         pop();
+    }
+
+    function drawHyperbolaLines(a, b, col, weight) {
+        noFill(); stroke(col); strokeWeight(weight);
+        beginShape();
+        for (let y = -1000/zoom; y <= 1000/zoom; y += 10/zoom) {
+            let x = a * sqrt(1 + (y*y)/(b*b));
+            vertex(x, y);
+        }
+        endShape();
+        beginShape();
+        for (let y = -1000/zoom; y <= 1000/zoom; y += 10/zoom) {
+            let x = -a * sqrt(1 + (y*y)/(b*b));
+            vertex(x, y);
+        }
+        endShape();
     }
 
     function runMode1() {
+        let worldMX = (mouseX - width/2 - offsetX) / zoom;
+        let worldMY = (mouseY - height/2 - offsetY) / zoom;
         let b = sqrt(c*c - a*a);
-        let mx = (mouseX - width/2 - offsetX) / zoom;
-        let my = (mouseY - height/2 - offsetY) / zoom;
 
-        fill(0, 100, 255); ellipse(-c, 0, 12/zoom); ellipse(c, 0, 12/zoom);
-        drawSubText("F", "1", -c, -15/zoom, 16/zoom);
-        drawSubText("F", "2", c, -15/zoom, 16/zoom);
+        fill(0, 122, 255); noStroke();
+        ellipse(-c, 0, 15/zoom); ellipse(c, 0, 15/zoom);
+        
+        drawSubText("F", "₁", -c, -15/zoom, 16/zoom);
+        drawSubText("F", "₂", c, -15/zoom, 16/zoom);
 
-        if (mouseIsPressed && !isOverUI()) {
-            let d1 = dist(mx, my, -c, 0);
-            let d2 = dist(mx, my, c, 0);
-            let diff = abs(d1 - d2);
+        if (mouseIsPressed && mouseButton === LEFT && !isOverUI()) {
+            let penY = worldMY;
+            let branch = worldMX >= 0 ? 1 : -1;
+            let penX = branch * a * sqrt(1 + (penY*penY)/(b*b));
             
-            // 거리의 차가 2a 근처일 때만 점을 찍고 선을 연결 (가운데 가로지름 방지)
-            if (abs(diff - 2*a) < 20) {
-                let ang = atan2(my, mx);
-                let hypA = (mx > 0) ? a : -a;
-                // 쌍곡선 공식 역산하여 정밀한 위치 보정
-                let px = mx; let py = my;
-                tracePoints.push({x: px, y: py, side: (mx > 0 ? 1 : -1)});
-                
-                stroke(200); strokeWeight(2/zoom);
-                line(-c, 0, px, py); line(c, 0, px, py);
-                fill(0); textSize(14/zoom);
-                text(`|d1-d2| ≈ ${(diff).toFixed(1)}`, px, py - 20/zoom);
-            }
+            tracePoints.push({x: penX, y: penY});
+            
+            stroke(50); strokeWeight(3/zoom);
+            line(-c, 0, penX, penY); line(c, 0, penX, penY);
+            
+            fill(100); noStroke(); ellipse(penX, penY, 10/zoom);
+            fill(200, 100, 0); rect(penX - 2/zoom, penY - 15/zoom, 4/zoom, 20/zoom);
+        } else {
+            stroke(150, 150, 150, 100); strokeWeight(3/zoom); noFill();
+            let defX = a * sqrt(1 + (60/zoom)*(60/zoom)/(b*b));
+            beginShape(); vertex(-c, 0); vertex(defX, 60/zoom); vertex(c, 0); endShape();
         }
 
-        noFill(); stroke(255, 77, 77); strokeWeight(3/zoom);
-        beginShape(POINTS);
-        for (let p of tracePoints) vertex(p.x, p.y);
-        endShape();
+        noFill(); stroke(50, 50, 200); strokeWeight(4/zoom);
+        for (let pt of tracePoints) {
+            point(pt.x, pt.y);
+        }
     }
 
     function runMode2() {
         let b = sqrt(c*c - a*a);
-        let mx = (mouseX - width/2 - offsetX) / zoom;
-        let my = (mouseY - height/2 - offsetY) / zoom;
+        let worldMX = (mouseX - width/2 - offsetX) / zoom;
+        let worldMY = (mouseY - height/2 - offsetY) / zoom;
 
         // 점근선
-        stroke(200, 200, 200, 150); strokeWeight(1/zoom);
-        line(-width/zoom, -width/zoom * (b/a), width/zoom, width/zoom * (b/a));
-        line(-width/zoom, width/zoom * (b/a), width/zoom, -width/zoom * (b/a));
+        stroke(180); strokeWeight(2/zoom); drawingContext.setLineDash([10, 10]);
+        line(-2000, -2000 * b/a, 2000, 2000 * b/a);
+        line(-2000, 2000 * b/a, 2000, -2000 * b/a);
+        drawingContext.setLineDash([]);
 
-        // 쌍곡선 그리기
-        noFill(); stroke(150); strokeWeight(2/zoom);
-        for(let s of [-1, 1]) {
-            beginShape();
-            for(let t = -2; t <= 2; t += 0.1) {
-                vertex(s * a * cosh(t), b * sinh(t));
-            }
-            endShape();
-        }
+        // 쌍곡선
+        drawHyperbolaLines(a, b, color(180), 3/zoom);
 
-        let items = [
+        let checkPts = [
             {x: 0, y: 0, label: "중심"},
-            {x: -c, y: 0, label: "초점 F1"},
-            {x: c, y: 0, label: "초점 F2"}
+            {x: -c, y: 0, label: "F", sub: "₁", prefix: "초점 "},
+            {x: c, y: 0, label: "F", sub: "₂", prefix: "초점 "},
+            {x: a, y: 0, label: "꼭짓점"},
+            {x: -a, y: 0, label: "꼭짓점"}
         ];
 
-        let hovered = items.find(i => dist(mx, my, i.x, i.y) < 20/zoom);
-        
-        fill(0, 122, 255); ellipse(-c, 0, 12/zoom); ellipse(c, 0, 12/zoom);
-        fill(0); ellipse(0, 0, 8/zoom);
-
-        if (hovered) {
-            fill(255, 200, 0, 150); noStroke(); ellipse(hovered.x, hovered.y, 40/zoom);
-            fill(0); textAlign(CENTER); text(hovered.label, hovered.x, hovered.y - 25/zoom);
-        }
-
-        // 마우스 클릭 시 거리 차 측정
-        if (mouseIsPressed && !isOverUI()) {
-            let side = mx > 0 ? 1 : -1;
-            let ang = atan2(my, abs(mx));
-            let t = log(abs(mx/a) + sqrt(pow(mx/a, 2) - 1)) || 0;
-            if (isNaN(t)) t = 0;
-            let px = side * a * cosh(t);
-            let py = (my > 0 ? 1 : -1) * b * sinh(t);
-            
-            let d1 = dist(px, py, -c, 0);
-            let d2 = dist(px, py, c, 0);
-            stroke(34, 197, 94); line(-c, 0, px, py); line(c, 0, px, py);
-            fill(34, 197, 94); ellipse(px, py, 10/zoom);
-            fill(0); text(`차이: ${abs(d1-d2).toFixed(1)} (2a)`, px, py - 20/zoom);
-        }
-    }
-
-    function runMode3() {
-        let b = sqrt(c*c - a*a);
-        let mx = (mouseX - width/2 - offsetX) / zoom;
-        let my = (mouseY - height/2 - offsetY) / zoom;
-
-        noFill(); stroke(200); strokeWeight(2/zoom);
-        for(let s of [-1, 1]) {
-            beginShape();
-            for(let t = -2.5; t <= 2.5; t += 0.1) vertex(s * a * cosh(t), b * sinh(t));
-            endShape();
-        }
-
-        let srcX = activeLightSource === 1 ? -c : c;
-        let targetX = activeLightSource === 1 ? c : -c;
-        let themeCol = activeLightSource === 1 ? color(255, 0, 0) : color(0, 100, 255);
-
-        fill(themeCol); ellipse(srcX, 0, 15/zoom);
-        fill(150); ellipse(targetX, 0, 10/zoom);
-
-        if (mouseIsPressed && !isOverUI()) {
-            if (frameCount % 5 === 0) {
-                // 한 초점에서 다른 초점을 향해 쏘는 광선
-                let dir = createVector(mx - srcX, my).normalize();
-                let t = solveHyperbola(srcX, 0, dir.x, dir.y, a, b);
-                if (t > 0) {
-                    let hitX = srcX + dir.x * t;
-                    let hitY = dir.y * t;
-                    // 반사광은 다른 초점(targetX)에서 뻗어나오는 방향
-                    let refDir = createVector(hitX - targetX, hitY).normalize();
-                    rays.push({px: srcX, py: 0, hx: hitX, hy: hitY, rx: hitX + refDir.x*1000, ry: hitY + refDir.y*1000, life: 255, col: themeCol});
-                }
+        let hoveredPt = null;
+        for (let pt of checkPts) {
+            if (dist(worldMX, worldMY, pt.x, pt.y) < 25/zoom) {
+                hoveredPt = pt; break;
             }
         }
 
-        for (let i = rays.length - 1; i >= 0; i--) {
-            let r = rays[i];
-            stroke(r.col.levels[0], r.col.levels[1], r.col.levels[2], r.life);
-            line(r.px, r.py, r.hx, r.hy);
-            line(r.hx, r.hy, r.rx, r.ry);
-            r.life -= 5;
-            if (r.life <= 0) rays.splice(i, 1);
+        fill(100); noStroke();
+        ellipse(a, 0, 8/zoom); ellipse(-a, 0, 8/zoom); 
+        fill(0); ellipse(0, 0, 8/zoom);
+        fill(0, 122, 255); ellipse(-c, 0, 15/zoom); ellipse(c, 0, 15/zoom);
+
+        if (hoveredPt) {
+            fill(255, 204, 0, 100); noStroke();
+            ellipse(hoveredPt.x, hoveredPt.y, 35/zoom); 
+            
+            fill(0); textSize(15/zoom);
+            if (hoveredPt.sub) {
+                textAlign(RIGHT, BASELINE); text(hoveredPt.prefix, hoveredPt.x - 10/zoom, hoveredPt.y - 20/zoom);
+                drawSubText(hoveredPt.label, hoveredPt.sub, hoveredPt.x + 15/zoom, hoveredPt.y - 20/zoom, 15/zoom);
+            } else {
+                textAlign(CENTER, BASELINE);
+                text(hoveredPt.label, hoveredPt.x, hoveredPt.y - 18/zoom);
+            }
+        } else {
+            drawSubText("F", "₁", -c, -15/zoom, 12/zoom, 100);
+            drawSubText("F", "₂", c, -15/zoom, 12/zoom, 100);
+        }
+
+        if (mouseIsPressed && !isOverUI() && !hoveredPt) {
+            activeY = worldMY;
+            activeBranch = worldMX >= 0 ? 1 : -1;
+        }
+
+        if (activeY !== null) {
+            let px = activeBranch * a * sqrt(1 + (activeY*activeY)/(b*b));
+            let py = activeY;
+            let d1 = dist(px, py, -c, 0); 
+            let d2 = dist(px, py, c, 0);
+
+            stroke(34, 197, 94); strokeWeight(3/zoom);
+            line(-c, 0, px, py); line(c, 0, px, py);
+            fill(34, 197, 94); noStroke(); ellipse(px, py, 12/zoom);
+            
+            fill(0); textSize(15/zoom); textAlign(CENTER);
+            text("d₁: " + d1.toFixed(1), (-c + px)/2, py/2 - 10/zoom);
+            text("d₂: " + d2.toFixed(1), (c + px)/2, py/2 - 10/zoom);
+            
+            fill(255, 59, 48); textSize(18/zoom); textStyle(BOLD);
+            text("거리의 차 |d₁ - d₂| = " + abs(d1-d2).toFixed(1) + " (일정)", 0, -100/zoom);
+            textStyle(NORMAL);
         }
     }
 
-    function solveHyperbola(sx, sy, dx, dy, a, b) {
+    function getHyperbolaIntersection(sx, sy, dx, dy, a, b) {
         let A = (dx*dx)/(a*a) - (dy*dy)/(b*b);
         let B = 2*sx*dx/(a*a) - 2*sy*dy/(b*b);
         let C = (sx*sx)/(a*a) - (sy*sy)/(b*b) - 1;
+
+        if (abs(A) < 1e-6) {
+            if (abs(B) > 1e-6) {
+                let t = -C/B;
+                if (t > 1e-4) return createVector(sx + t*dx, sy + t*dy);
+            }
+            return null;
+        }
+
         let det = B*B - 4*A*C;
-        if (det < 0) return -1;
-        let t1 = (-B + sqrt(det))/(2*A);
-        let t2 = (-B - sqrt(det))/(2*A);
-        return t1 > 0.1 ? t1 : t2;
+        if (det < 0) return null; 
+        
+        let t1 = (-B + Math.sqrt(det)) / (2*A);
+        let t2 = (-B - Math.sqrt(det)) / (2*A);
+        
+        // 최소 양수 t (가장 먼저 부딪히는 지점)
+        let t = -1;
+        if (t1 > 1e-4 && t2 > 1e-4) t = min(t1, t2);
+        else if (t1 > 1e-4) t = t1;
+        else if (t2 > 1e-4) t = t2;
+
+        if (t > 0) return createVector(sx + t*dx, sy + t*dy);
+        return null;
+    }
+
+    function getPosAlongPath(path, dists, d) {
+        if (d <= 0) return path[0];
+        let currentDist = 0;
+        for (let i = 0; i < dists.length; i++) {
+            if (d <= currentDist + dists[i]) {
+                let t = (d - currentDist) / dists[i];
+                return p5.Vector.lerp(path[i], path[i+1], t);
+            }
+            currentDist += dists[i];
+        }
+        return path[path.length - 1];
     }
 
     function toggleLightSource() {
         activeLightSource = activeLightSource === 1 ? 2 : 1;
-        let btn = document.getElementById('lightSwitchBtn');
-        if(activeLightSource === 1) {
-            btn.innerHTML = "💡 광원: F₁ (Red)";
-            btn.style.background = "#ff4d4d";
-        } else {
-            btn.innerHTML = "💡 광원: F₂ (Blue)";
-            btn.style.background = "#007bff";
+        let subNum = activeLightSource === 1 ? "₁" : "₂";
+        document.getElementById('lightSwitchBtn').innerHTML = `💡 광원 변경 (현재: F${subNum})`;
+        rays = []; 
+    }
+
+    function runMode3() {
+        let b = sqrt(c*c - a*a);
+        let worldMX = (mouseX - width/2 - offsetX) / zoom;
+        let worldMY = (mouseY - height/2 - offsetY) / zoom;
+
+        drawHyperbolaLines(a, b, color(50, 50, 200), 4/zoom);
+
+        let sourcePos = activeLightSource === 1 ? -c : c;
+        let targetPos = activeLightSource === 1 ? c : -c;
+
+        fill(255, 215, 0); noStroke(); ellipse(sourcePos, 0, 20/zoom); 
+        fill(0, 122, 255); ellipse(targetPos, 0, 15/zoom); 
+        
+        drawSubText("F", activeLightSource === 1 ? "₁" : "₂", sourcePos, -20/zoom, 16/zoom);
+        drawSubText("F", activeLightSource === 1 ? "₂" : "₁", targetPos, -20/zoom, 16/zoom);
+
+        if (mouseIsPressed && mouseButton === LEFT && !isOverUI()) {
+            if (frameCount % 10 === 0) {
+                let p_start = createVector(sourcePos, 0);
+                let dir = createVector(worldMX - sourcePos, worldMY).normalize();
+                
+                let p_hit = getHyperbolaIntersection(p_start.x, p_start.y, dir.x, dir.y, a, b);
+                
+                if (p_hit) {
+                    let bouncePath = [p_start.copy(), p_hit.copy()];
+                    
+                    // 쌍곡선의 법선 벡터 (그레이디언트)
+                    let nx = 2 * p_hit.x / (a*a);
+                    let ny = -2 * p_hit.y / (b*b);
+                    let normal = createVector(nx, ny).normalize();
+                    
+                    // 입사각과 법선의 방향 맞추기
+                    let vInc = p5.Vector.sub(p_hit, p_start).normalize();
+                    if (vInc.dot(normal) > 0) normal.mult(-1);
+                    
+                    // 반사 벡터 계산
+                    let vRef = p5.Vector.sub(vInc, p5.Vector.mult(normal, 2 * vInc.dot(normal)));
+                    
+                    // 반사광은 마치 반대편 초점(targetPos)에서 나오는 것처럼 퍼짐
+                    let farDist = 3000;
+                    bouncePath.push(createVector(p_hit.x + vRef.x * farDist, p_hit.y + vRef.y * farDist));
+
+                    let dists = [];
+                    let totalD = 0;
+                    for(let i=0; i<bouncePath.length-1; i++) {
+                        let d = p5.Vector.dist(bouncePath[i], bouncePath[i+1]);
+                        dists.push(d); totalD += d;
+                    }
+
+                    let sumDists = [0];
+                    for(let i=0; i<dists.length; i++) sumDists.push(sumDists[i] + dists[i]);
+
+                    rays.push({ path: bouncePath, dists: dists, sumDists: sumDists, progress: 0, totalDist: totalD });
+                }
+            }
         }
-        rays = [];
+
+        let speed = 35 / zoom;
+        let beamLen = 150 / zoom; 
+        let showAngle = document.getElementById('angleCheck').checked;
+
+        for (let i = rays.length - 1; i >= 0; i--) {
+            let r = rays[i];
+            r.progress += speed;
+
+            stroke(255, 204, 0, 30); strokeWeight(2/zoom);
+            line(r.path[0].x, r.path[0].y, r.path[1].x, r.path[1].y); // 빛이 뻗어나간 자취 살짝 표시
+
+            let head = r.progress;
+            let tail = max(0, r.progress - beamLen);
+
+            noFill(); stroke(255, 220, 0); strokeWeight(6/zoom);
+            beginShape();
+            for (let d = tail; d <= head; d += 5/zoom) {
+                let pos = getPosAlongPath(r.path, r.dists, d);
+                vertex(pos.x, pos.y);
+            }
+            let headPos = getPosAlongPath(r.path, r.dists, head);
+            vertex(headPos.x, headPos.y);
+            endShape();
+
+            noStroke(); fill(255, 255, 255, 200); ellipse(headPos.x, headPos.y, 8/zoom);
+
+            if (showAngle && r.progress > r.sumDists[1]) {
+                let px = r.path[1].x; let py = r.path[1].y;
+                let nx = 2 * px / (a*a); let ny = -2 * py / (b*b);
+                let vNorm = createVector(nx, ny).normalize();
+                let vInc = createVector(r.path[0].x - px, r.path[0].y - py).normalize();
+                if (vNorm.dot(vInc) < 0) vNorm.mult(-1);
+                
+                let vTan = createVector(-vNorm.y, vNorm.x);
+
+                stroke(40, 167, 69, 150); strokeWeight(2/zoom); drawingContext.setLineDash([6, 6]);
+                line(px - vTan.x*80/zoom, py - vTan.y*80/zoom, px + vTan.x*80/zoom, py + vTan.y*80/zoom);
+                drawingContext.setLineDash([]);
+                
+                stroke(255, 136, 0, 180); strokeWeight(2/zoom);
+                line(px, py, px + vNorm.x*60/zoom, py + vNorm.y*60/zoom);
+
+                let vRef = createVector(r.path[2].x - px, r.path[2].y - py).normalize();
+                let angleDeg = degrees(acos(vInc.dot(vNorm))).toFixed(1);
+
+                let rArc = 35 / zoom;
+                noFill(); stroke(255, 100, 0, 150); strokeWeight(2/zoom);
+                let drawArc = (v1, v2) => {
+                    let a1 = v1.heading(); let a2 = v2.heading();
+                    let start = min(a1, a2); let stop = max(a1, a2);
+                    if (stop - start > PI) { start = stop; stop = min(a1,a2) + TWO_PI; }
+                    arc(px, py, rArc*2, rArc*2, start, stop);
+                };
+                drawArc(vNorm, vInc); drawArc(vNorm, vRef);
+
+                fill(255, 100, 0); noStroke(); textSize(12/zoom); textAlign(CENTER, CENTER);
+                let txtInc = p5.Vector.add(vInc, vNorm).normalize().mult(55/zoom);
+                let txtRef = p5.Vector.add(vRef, vNorm).normalize().mult(55/zoom);
+                text(angleDeg + "°", px + txtInc.x, py + txtInc.y);
+                text(angleDeg + "°", px + txtRef.x, py + txtRef.y);
+            }
+            if (tail > 2000) rays.splice(i, 1);
+        }
     }
 
     function setMode(m) {
         mode = m;
-        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i+1 === m));
-        document.getElementById('lightSwitchBtn').style.display = m === 3 ? 'block' : 'none';
-        document.getElementById('angleUi').style.display = m === 3 ? 'flex' : 'none';
-        resetData();
+        document.getElementById('tab1').classList.toggle('active', m === 1);
+        document.getElementById('tab2').classList.toggle('active', m === 2);
+        document.getElementById('tab3').classList.toggle('active', m === 3);
+        
+        document.getElementById('angleUi').style.display = (m === 3) ? 'flex' : 'none';
+        document.getElementById('lightSwitchBtn').style.display = (m === 3) ? 'block' : 'none';
+        
         updateInstruction();
+        updateInfoText();
     }
+
+    function toggleInfo() {
+        isInfoOpen = !isInfoOpen;
+        let btn = document.getElementById('infoToggleBtn');
+        let box = document.getElementById('infoBox');
+        if (isInfoOpen) { btn.innerText = "📖 개념 설명 끄기"; box.style.display = "block"; updateInfoText(); } 
+        else { btn.innerText = "📖 개념 설명 켜기"; box.style.display = "none"; }
+    }
+
+    function updateInfoText() { if (isInfoOpen) document.getElementById('infoBox').innerHTML = conceptTexts[mode]; }
 
     function updateInstruction() {
         let ins = document.getElementById('instructions');
-        if(mode===1) ins.innerHTML = "초점 바깥쪽에서 마우스를 움직여 쌍곡선을 그려보세요.";
-        else if(mode===2) ins.innerHTML = "중심과 초점에 마우스를 올리거나, 곡선 위를 클릭해보세요.";
-        else ins.innerHTML = "광원(F)에서 반대편 초점을 향해 빛을 쏘면 곡선에 반사됩니다.";
+        if (mode === 1) ins.innerHTML = "캔버스 좌우 공간을 <b>위아래로 드래그</b>하여 쌍곡선의 궤적을 그려보세요.";
+        else if (mode === 2) ins.innerHTML = "꼭짓점과 초점 등에 <b>마우스를 올려보세요.</b><br>쌍곡선 위를 <b>클릭하여 드래그</b>하면 거리의 차가 일정함을 볼 수 있습니다.";
+        else if (mode === 3) ins.innerHTML = "쌍곡선을 향해 마우스를 <b>클릭하여 꾹 누르고 계세요.</b><br>빛이 반사되어 <b>반대편 초점에서 뻗어 나가는 방향</b>으로 직진합니다.";
     }
 
-    function resetData() { tracePoints = []; rays = []; }
-    function cosh(x) { return (exp(x) + exp(-x)) / 2; }
-    function sinh(x) { return (exp(x) - exp(-x)) / 2; }
-    function isOverUI() { return mouseX < 280 && mouseY > 100 && mouseY < 400; }
-    function drawGrid() { stroke(240); for(let i=-2000; i<2000; i+=50) { line(i,-2000,i,2000); line(-2000,i,2000,i); } }
+    function resetData() { tracePoints = []; activeY = null; rays = []; }
+    function mouseDragged() { if (mouseButton === RIGHT) { offsetX += mouseX - pmouseX; offsetY += mouseY - pmouseY; } }
+    function mouseWheel(event) { zoom = constrain(zoom - event.delta * 0.001, 0.2, 4); return false; }
+    
+    function isOverUI() { 
+        let inLeftMenu = mouseY < 280 && mouseX < 260;
+        let inRightInfo = isInfoOpen && (mouseX > width - 360 && mouseY < 400); 
+        return inLeftMenu || inRightInfo;
+    } 
+
+    function resetView() { zoom = 1.0; offsetX = 0; offsetY = 0; }
+    function drawGrid() { stroke(240); strokeWeight(1/zoom); for (let i = -2000; i < 2000; i += 50) line(i, -2000, i, 2000); for (let j = -2000; j < 2000; j += 50) line(-2000, j, 2000, j); }
     function windowResized() { resizeCanvas(windowWidth, windowHeight); }
-    function toggleInfo() { isInfoOpen = !isInfoOpen; document.getElementById('infoBox').style.display = isInfoOpen ? 'block' : 'none'; document.getElementById('infoBox').innerHTML = "<h3>쌍곡선의 성질</h3>두 초점으로부터의 <b>거리의 차</b>가 일정한 점들의 집합입니다. 광학적으로 한 초점을 향해 나아가는 빛은 쌍곡선 거울에 반사되어 다른 초점에서 나오는 것처럼 나아갑니다."; }
 </script>
 </body>
 </html>
